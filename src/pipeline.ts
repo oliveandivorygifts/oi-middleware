@@ -3,12 +3,22 @@
  * - src/types.ts — HandlerFunction, MiddlewareContext, MiddlewareFunction
  */
 
+/**
+ * Middleware execution engine.
+ * Chains middleware functions into a Koa-style onion pipeline so each layer
+ * can run logic before and after the downstream handler.
+ *
+ * @module
+ */
+
 import type { HandlerFunction, MiddlewareContext, MiddlewareFunction } from "./types.js";
 
+/** Convenience wrapper that returns middlewares as a typed array for runPipeline. */
 export function compose(...middlewares: MiddlewareFunction[]): MiddlewareFunction[] {
   return middlewares;
 }
 
+/** Executes a middleware stack in order, calling finalHandler when all layers have yielded. */
 export async function runPipeline(
   request: Request,
   context: MiddlewareContext,

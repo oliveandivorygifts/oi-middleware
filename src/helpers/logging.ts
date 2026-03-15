@@ -4,6 +4,14 @@
  * - src/middleware/logging.ts  — Uses ConsoleSink, D1EventLogsSink, writeLogWithFailSafe
  */
 
+/**
+ * Logging primitives: sinks, redaction, and safe serialisation.
+ * Provides ConsoleSink and D1EventLogsSink so the logging middleware
+ * can write events without coupling to a specific storage backend.
+ *
+ * @module
+ */
+
 import type { D1DatabaseLike, LogEvent, LogSink } from "../types.js";
 
 const REDACTED_KEYS = [
@@ -27,6 +35,7 @@ function shouldRedactKey(key: string): boolean {
   return REDACTED_KEYS.some((sensitiveKey) => keyLower.includes(sensitiveKey));
 }
 
+/** Recursively replaces values of sensitive keys (tokens, secrets) with "[REDACTED]". */
 export function redactSensitive(value: unknown): unknown {
   if (value === null || value === undefined) {
     return value;
@@ -55,6 +64,7 @@ export function redactSensitive(value: unknown): unknown {
   return sanitized;
 }
 
+/** Truncates text to a maximum length to prevent oversized log entries. */
 export function truncateText(text: string, maxLength = 2000): string {
   if (text.length <= maxLength) {
     return text;
@@ -62,6 +72,7 @@ export function truncateText(text: string, maxLength = 2000): string {
   return `${text.slice(0, maxLength - 3)}...`;
 }
 
+/** Redacts and serialises a value to JSON, truncating to prevent oversized D1 inserts. */
 export function safeJsonStringify(value: unknown, maxLength = 16_000): string {
   const sanitized = redactSensitive(value);
   const jsonString = JSON.stringify(sanitized ?? {});
@@ -96,6 +107,7 @@ function buildInsertValues(event: LogEvent) {
   ];
 }
 
+/** Writes log events to stdout as JSON, suitable for local development. */
 export class ConsoleSink implements LogSink {
   async write(event: LogEvent): Promise<void> {
     console.log(
@@ -108,6 +120,7 @@ export class ConsoleSink implements LogSink {
   }
 }
 
+/** Persists log events to the D1 event_logs table for production observability. */
 export class D1EventLogsSink implements LogSink {
   private readonly database: D1DatabaseLike;
 
@@ -126,6 +139,7 @@ export class D1EventLogsSink implements LogSink {
   }
 }
 
+/** Writes a log event, swallowing sink errors so logging never crashes a request. */
 export async function writeLogWithFailSafe(sink: LogSink, event: LogEvent): Promise<void> {
   try {
     await sink.write(event);

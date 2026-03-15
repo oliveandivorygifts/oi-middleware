@@ -3,8 +3,17 @@
  * - src/types.ts — ApiError, MiddlewareContext
  */
 
+/**
+ * JSON response helpers.
+ * Builds consistent success, error, redirect, and no-content responses
+ * with correlation headers attached.
+ *
+ * @module
+ */
+
 import type { ApiError, MiddlewareContext } from "../types.js";
 
+/** Stamps correlation and request IDs onto an existing Response. */
 export function attachRequestHeaders(
   response: Response,
   context?: Pick<MiddlewareContext, "correlation_id" | "request_id">,
@@ -18,6 +27,7 @@ export function attachRequestHeaders(
   return response;
 }
 
+/** Returns a JSON success response with correlation headers. */
 export function jsonOk(
   data: unknown,
   status = 200,
@@ -32,6 +42,7 @@ export function jsonOk(
   return attachRequestHeaders(response, context);
 }
 
+/** Returns a structured JSON error response matching the standard API error envelope. */
 export function jsonError(
   error: ApiError,
   context?: Pick<MiddlewareContext, "correlation_id" | "request_id">,
@@ -73,11 +84,13 @@ export function jsonError(
   return response;
 }
 
+/** Returns a 204 No Content response with correlation headers. */
 export function noContent(context?: Pick<MiddlewareContext, "correlation_id" | "request_id">): Response {
   const response = new Response(null, { status: 204 });
   return attachRequestHeaders(response, context);
 }
 
+/** Returns an HTTP redirect response with correlation headers. */
 export function redirect(
   url: string,
   status = 302,

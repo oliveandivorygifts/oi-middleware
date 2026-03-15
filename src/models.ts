@@ -5,8 +5,17 @@
  * - consumers: oi-api, oi-admin, oi-storefront all import these types
  */
 
+/**
+ * Shared domain model types used across all Olive & Ivory repos.
+ * Defined here so every consumer shares a single source of truth for entity shapes.
+ *
+ * @module
+ */
+
+/** Allowed lifecycle states for an order. */
 export type OrderStatus = "pending" | "paid" | "packed" | "out_for_delivery" | "delivered" | "cancelled" | "expired";
 
+/** A customer order including payment, delivery, and notification state. */
 export interface Order {
   id: string;
   order_number?: number | null;
@@ -43,6 +52,7 @@ export interface Order {
   admin_email_status?: "pending" | "sent" | "failed";
 }
 
+/** A single line item within an order, linking to a collection. */
 export interface OrderItem {
   id: string;
   order_id: string;
@@ -53,10 +63,12 @@ export interface OrderItem {
   line_total_cents: number;
 }
 
+/** Order joined with its line items for detail views. */
 export type OrderWithItems = Order & {
   items: OrderItem[];
 };
 
+/** Geographic delivery zone with its associated fee. */
 export interface DeliveryZone {
   id: string;
   zone_key?: string | null;
@@ -67,6 +79,7 @@ export interface DeliveryZone {
   active: number;
 }
 
+/** A frequently asked question displayed on the storefront. */
 export interface Faq {
   id: string;
   question: string;
@@ -77,6 +90,7 @@ export interface Faq {
   updated_at: string;
 }
 
+/** An individual product/ingredient that can be included in collections and gifts. */
 export interface Item {
   id: string;
   name: string;
@@ -109,6 +123,7 @@ export interface Item {
   updated_at?: string;
 }
 
+/** A curated grouping of items sold as a single gift product. */
 export interface Collection {
   id: string;
   name: string;
@@ -130,6 +145,7 @@ export interface Collection {
   updated_at?: string;
 }
 
+/** Join-table row linking a collection to one of its component items. */
 export interface CollectionItemRow {
   collection_id: string;
   item_id: string;
@@ -137,6 +153,7 @@ export interface CollectionItemRow {
   sort_order: number;
 }
 
+/** An image or media asset associated with a gift, stored in R2. */
 export interface GiftMedia {
   id: string;
   gift_id: string;
@@ -153,6 +170,7 @@ export interface GiftMedia {
   updated_at?: string | null;
 }
 
+/** A storefront-facing gift product with SEO, media, and collection associations. */
 export interface Gift {
   id: string;
   collection_id?: string | null;
@@ -187,6 +205,7 @@ export interface Gift {
   media?: GiftMedia[];
 }
 
+/** Audit record for an AI content-generation run against a gift. */
 export interface GiftAiRun {
   id: string;
   gift_id: string;
@@ -202,11 +221,13 @@ export interface GiftAiRun {
   correlation_id: string;
 }
 
+/** Collection joined with its component items and optional child gifts. */
 export interface CollectionWithItems extends Collection {
   items: (Item & { item_id: string; quantity: number; sort_order: number })[];
   gifts?: Gift[];
 }
 
+/** Flattened view of a collection's component item with stock info for admin display. */
 export interface CollectionComponent {
   collection_id: string;
   item_id: string;
@@ -218,6 +239,7 @@ export interface CollectionComponent {
   pack_qty?: number | null;
 }
 
+/** Collection enriched with resolved image URLs, components, and stock availability. */
 export type CollectionWithImage = Collection & {
   imageUrl: string | null;
   galleryImageUrls: string[];
@@ -226,6 +248,7 @@ export type CollectionWithImage = Collection & {
   inStock: boolean;
 };
 
+/** A size/tier variant of a collection with its own price and image. */
 export interface CollectionVariant {
   id: string;
   collection_id: string;
@@ -240,6 +263,7 @@ export interface CollectionVariant {
   updated_at?: string;
 }
 
+/** Join-table row linking a collection variant to its component items. */
 export interface CollectionVariantItem {
   collection_variant_id: string;
   item_id: string;
@@ -251,6 +275,7 @@ export interface CollectionVariantItem {
   pack_qty?: number | null;
 }
 
+/** Pre-built tile data for rendering a collection variant card on the storefront. */
 export type CollectionVariantTile = {
   collection: CollectionWithImage;
   variant: CollectionVariant;
@@ -259,6 +284,7 @@ export type CollectionVariantTile = {
   href: string;
 };
 
+/** A featured collection with its child gifts, ready for storefront hero sections. */
 export type FeaturedCollectionWithGifts = {
   collection: CollectionWithImage;
   gifts: Array<{

@@ -1,3 +1,11 @@
+/**
+ * Canonical action strings for structured observability events.
+ * Keeps log/metric action names consistent across all middleware layers.
+ *
+ * @module
+ */
+
+/** Well-known action identifiers referenced by logging and audit middleware. */
 export const OBSERVABILITY_ACTIONS = {
   HTTP_REQUEST: "http.request",
   HTTP_RESPONSE: "http.response",
@@ -11,4 +19,5 @@ export const OBSERVABILITY_ACTIONS = {
   ADMIN_AUDIT: "admin.audit",
 } as const;
 
+/** Union of all recognised observability action strings. */
 export type ObservabilityAction = (typeof OBSERVABILITY_ACTIONS)[keyof typeof OBSERVABILITY_ACTIONS];

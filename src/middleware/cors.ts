@@ -3,8 +3,16 @@
  * - src/types.ts — MiddlewareFunction
  */
 
+/**
+ * CORS middleware for handling cross-origin requests.
+ * Responds to OPTIONS preflight and sets allow-origin on all responses.
+ *
+ * @module
+ */
+
 import type { MiddlewareFunction } from "../types.js";
 
+/** Middleware that adds CORS headers and handles preflight requests. */
 export function withCors(options?: { allow_origin?: string; allow_methods?: string[] }): MiddlewareFunction {
   return async (request, context, next) => {
     const allowOrigin = options?.allow_origin || "*";

@@ -1,3 +1,12 @@
+/**
+ * Typed fetch wrapper for JSON API calls.
+ * Provides consistent error handling and correlation-id propagation
+ * so every consumer gets the same failure semantics.
+ *
+ * @module
+ */
+
+/** Shape of the error payload returned by the API's standard error envelope. */
 export interface ApiErrorPayload {
   ok?: boolean;
   error?:
@@ -13,6 +22,7 @@ export interface ApiErrorPayload {
   details?: unknown;
 }
 
+/** Error thrown when fetchJson encounters a non-2xx response or { ok: false } payload. */
 export class FetchJsonError extends Error {
   status: number;
   payload?: ApiErrorPayload;

@@ -5,11 +5,20 @@
  * - src/helpers/json-error.ts — attachRequestHeaders
  */
 
+/**
+ * Hono framework adapter.
+ * Bridges the middleware pipeline into Hono's middleware signature
+ * so the API worker can use shared middleware without framework lock-in.
+ *
+ * @module
+ */
+
 import type { MiddlewareHandler } from "hono";
 import { attachRequestHeaders } from "../helpers/json-error.js";
 import { runPipeline } from "../pipeline.js";
 import type { HandlerFunction, MiddlewareContext, MiddlewareFunction } from "../types.js";
 
+/** Wraps the middleware pipeline as a Hono MiddlewareHandler. */
 export function hono(middlewares: MiddlewareFunction[]): MiddlewareHandler {
   return async (honoContext, next) => {
     const middlewareContext: MiddlewareContext = {
@@ -37,4 +46,5 @@ export function hono(middlewares: MiddlewareFunction[]): MiddlewareHandler {
   };
 }
 
+/** Alias for hono() to match the withX naming convention used elsewhere. */
 export const withHonoPipeline = hono;

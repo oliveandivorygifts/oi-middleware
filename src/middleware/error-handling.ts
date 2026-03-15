@@ -5,6 +5,13 @@
  * - src/helpers/json-error.ts       — jsonError
  */
 
+/**
+ * Top-level error boundary middleware.
+ * Ensures unhandled throws always produce a structured JSON error instead of a raw 500.
+ *
+ * @module
+ */
+
 import { classifyError } from "../helpers/classify-error.js";
 import { jsonError } from "../helpers/json-error.js";
 import type { MiddlewareFunction } from "../types.js";

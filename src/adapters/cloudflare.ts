@@ -5,10 +5,19 @@
  * - src/helpers/json-error.ts — attachRequestHeaders
  */
 
+/**
+ * Cloudflare Workers adapter.
+ * Wraps the middleware pipeline into a standard Workers fetch handler signature
+ * so it can be used directly in a Worker's export default { fetch }.
+ *
+ * @module
+ */
+
 import { attachRequestHeaders } from "../helpers/json-error.js";
 import { runPipeline } from "../pipeline.js";
 import type { HandlerFunction, MiddlewareContext, MiddlewareFunction, WorkerExecutionContext } from "../types.js";
 
+/** Wraps the middleware pipeline as a Cloudflare Workers fetch handler. */
 export function cloudflare<Env = unknown>(
   middlewares: MiddlewareFunction[],
   handler: (
@@ -40,4 +49,5 @@ export function cloudflare<Env = unknown>(
   };
 }
 
+/** Alias for cloudflare() to match the withX naming convention used elsewhere. */
 export const withCloudflarePipeline = cloudflare;

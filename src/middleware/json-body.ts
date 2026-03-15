@@ -4,6 +4,13 @@
  * - src/helpers/json-error.ts — jsonError
  */
 
+/**
+ * JSON body parsing middleware.
+ * Guards against oversized or malformed payloads before they reach handlers.
+ *
+ * @module
+ */
+
 import { jsonError } from "../helpers/json-error.js";
 import type { MiddlewareFunction } from "../types.js";
 

@@ -12,6 +12,14 @@
  * - tests/pipeline.test.ts            — Uses MiddlewareContext, MiddlewareFunction
  */
 
+/**
+ * Shared type definitions for the middleware pipeline.
+ * Centralises all interfaces so consumers and middleware layers agree on a single contract.
+ *
+ * @module
+ */
+
+/** Environment bindings available to every middleware and handler at the edge. */
 export interface AppEnv {
   DB?: D1DatabaseLike;
   KV?: unknown;
@@ -23,6 +31,7 @@ export interface AppEnv {
   [key: string]: unknown;
 }
 
+/** Minimal D1 prepared-statement shape so middleware stays decoupled from Cloudflare's SDK types. */
 export interface D1StatementLike {
   bind(...values: unknown[]): D1StatementLike;
   run(): Promise<unknown>;
@@ -30,15 +39,18 @@ export interface D1StatementLike {
   all<T = unknown>(): Promise<{ results?: T[] } | T[]>;
 }
 
+/** Minimal D1 database shape so middleware stays decoupled from Cloudflare's SDK types. */
 export interface D1DatabaseLike {
   prepare(sql: string): D1StatementLike;
 }
 
+/** Mirrors Cloudflare's ExecutionContext for fire-and-forget background work. */
 export interface WorkerExecutionContext {
   waitUntil(promise: Promise<unknown>): void;
   passThroughOnException?(): void;
 }
 
+/** Per-request identifiers and metadata populated by the request-context middleware. */
 export interface RequestContext {
   correlation_id: string;
   request_id: string;
@@ -51,11 +63,13 @@ export interface RequestContext {
   user_email?: string | null;
 }
 
+/** Full context bag threaded through every middleware and handler in the pipeline. */
 export interface MiddlewareContext extends RequestContext {
   env: AppEnv;
   state: Record<string, unknown>;
 }
 
+/** Structured error shape used by jsonError to build consistent error responses. */
 export interface ApiError {
   code: string;
   message: string;
@@ -65,6 +79,7 @@ export interface ApiError {
   headers?: HeadersInit;
 }
 
+/** Standard envelope returned by API endpoints so clients can branch on ok/error. */
 export interface ApiResult<TData = unknown> {
   ok: boolean;
   data?: TData;
@@ -76,14 +91,17 @@ export interface ApiResult<TData = unknown> {
   details?: unknown;
 }
 
+/** Cursor-based pagination wrapper for list endpoints. */
 export interface PaginationResult<TItem> {
   items: TItem[];
   next_cursor: string | null;
   total: number | null;
 }
 
+/** Severity levels for structured log events. */
 export type LogLevel = "debug" | "info" | "warn" | "error" | "security";
 
+/** Single structured log record written by the logging middleware to a LogSink. */
 export interface LogEvent {
   level: LogLevel;
   action: string;
@@ -101,10 +119,12 @@ export interface LogEvent {
   metadata?: Record<string, unknown>;
 }
 
+/** Pluggable destination for log events (D1, console, or custom). */
 export interface LogSink {
   write(event: LogEvent): Promise<void>;
 }
 
+/** Configuration for the fixed-window rate limiter middleware. */
 export interface RateLimitConfig {
   limit: number;
   window_seconds: number;
@@ -114,6 +134,7 @@ export interface RateLimitConfig {
   skip?: (request: Request, context: MiddlewareContext) => boolean;
 }
 
+/** Configuration for the HMAC authentication middleware. */
 export interface AuthHmacConfig {
   secret_env_key: string;
   tolerance_seconds?: number;
@@ -121,12 +142,15 @@ export interface AuthHmacConfig {
   skip?: (request: Request, context: MiddlewareContext) => boolean;
 }
 
+/** Callback that advances execution to the next middleware in the pipeline. */
 export type NextFunction = () => Promise<Response>;
 
+/** A single middleware step that can inspect/modify the request, context, or response. */
 export type MiddlewareFunction = (
   request: Request,
   context: MiddlewareContext,
   next: NextFunction,
 ) => Promise<Response>;
 
+/** Terminal handler that produces the final Response after all middleware has run. */
 export type HandlerFunction = (request: Request, context: MiddlewareContext) => Promise<Response> | Response;

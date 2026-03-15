@@ -4,6 +4,14 @@
  * - src/helpers/request-context.ts   — resolveRequestIds, getHeaderCaseInsensitive
  */
 
+/**
+ * Request context initialisation middleware.
+ * Seeds the shared MiddlewareContext with correlation IDs, client IP, and route info
+ * so downstream middleware and handlers have consistent request metadata.
+ *
+ * @module
+ */
+
 import { getHeaderCaseInsensitive, resolveRequestIds } from "../helpers/request-context.js";
 import type { MiddlewareFunction } from "../types.js";
 

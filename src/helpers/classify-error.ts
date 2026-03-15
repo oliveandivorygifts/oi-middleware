@@ -4,8 +4,17 @@
  * - src/middleware/error-handling.ts  — Uses classifyError
  */
 
+/**
+ * Error classification helper.
+ * Maps arbitrary thrown values to a consistent HTTP status, code, and message
+ * so the error-handling middleware can return a uniform JSON shape.
+ *
+ * @module
+ */
+
 import type { ApiError } from "../types.js";
 
+/** Normalised error shape produced by classifyError. */
 export interface ClassifiedError {
   status: number;
   code: string;
@@ -47,6 +56,7 @@ function fromApiError(candidate: unknown): ClassifiedError | null {
   };
 }
 
+/** Inspects an unknown error and returns a structured HTTP-friendly classification. */
 export function classifyError(error: unknown): ClassifiedError {
   const explicit = fromApiError(error as ApiError);
   if (explicit) {

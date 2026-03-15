@@ -5,6 +5,14 @@
  * - src/helpers/json-error.ts — attachRequestHeaders
  */
 
+/**
+ * Next.js Edge API route adapter.
+ * Runs the middleware pipeline inside a Next.js route handler,
+ * resolving Cloudflare env bindings via @cloudflare/next-on-pages when available.
+ *
+ * @module
+ */
+
 import { attachRequestHeaders } from "../helpers/json-error.js";
 import { runPipeline } from "../pipeline.js";
 import type { HandlerFunction, MiddlewareContext, MiddlewareFunction } from "../types.js";
@@ -27,6 +35,7 @@ async function resolveNextEdgeEnv(): Promise<Record<string, unknown>> {
   return {};
 }
 
+/** Wraps the middleware pipeline as a Next.js Edge API route handler. */
 export function nextjs(
   middlewares: MiddlewareFunction[],
   handler: (
@@ -58,4 +67,5 @@ export function nextjs(
   };
 }
 
+/** Alias for nextjs() to match the withX naming convention used elsewhere. */
 export const withNextJsPipeline = nextjs;

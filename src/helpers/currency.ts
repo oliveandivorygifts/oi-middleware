@@ -1,3 +1,10 @@
+/**
+ * AUD currency formatting helper.
+ * Keeps money display consistent across storefront and admin.
+ *
+ * @module
+ */
+
 const audCurrencyFormatter = new Intl.NumberFormat("en-AU", {
   style: "currency",
   currency: "AUD",

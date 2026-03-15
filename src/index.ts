@@ -1,3 +1,10 @@
+/**
+ * Package barrel file.
+ * Re-exports every public API so consumers can import from a single entry point.
+ *
+ * @module
+ */
+
 // Types
 export * from "./types.js";
 

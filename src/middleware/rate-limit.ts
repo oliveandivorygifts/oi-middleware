@@ -5,6 +5,13 @@
  * - src/helpers/json-error.ts — jsonError
  */
 
+/**
+ * Fixed-window rate limiter middleware.
+ * Supports D1-backed or in-memory counters to throttle abusive clients.
+ *
+ * @module
+ */
+
 import { OBSERVABILITY_ACTIONS } from "../actions.js";
 import { jsonError } from "../helpers/json-error.js";
 import type { D1DatabaseLike, MiddlewareFunction, RateLimitConfig } from "../types.js";
@@ -12,11 +19,13 @@ import type { D1DatabaseLike, MiddlewareFunction, RateLimitConfig } from "../typ
 const memoryRateLimitStore = new Map<string, number>();
 const d1TablesEnsured = new Set<string>();
 
+/** Calculates the start of the current fixed window for a given timestamp. */
 export function getWindowStartSeconds(nowMilliseconds: number, windowSeconds: number): number {
   const nowSeconds = Math.floor(nowMilliseconds / 1000);
   return Math.floor(nowSeconds / windowSeconds) * windowSeconds;
 }
 
+/** Returns how many seconds remain until the current rate-limit window resets. */
 export function getRetryAfterSeconds(
   nowMilliseconds: number,
   windowStartSeconds: number,
@@ -73,6 +82,7 @@ function incrementMemoryCounter(bucketKey: string, windowStart: number): number 
   return nextCount;
 }
 
+/** Middleware that enforces per-client request rate limits. */
 export function withRateLimit(configuration: RateLimitConfig): MiddlewareFunction {
   const tableName = configuration.table_name || "api_rate_limits";
 

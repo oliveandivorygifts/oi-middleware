@@ -5,6 +5,13 @@
  * - src/helpers/json-error.ts — jsonError
  */
 
+/**
+ * HMAC-SHA256 request authentication middleware.
+ * Prevents unsigned or replayed requests from reaching business handlers.
+ *
+ * @module
+ */
+
 import { OBSERVABILITY_ACTIONS } from "../actions.js";
 import { jsonError } from "../helpers/json-error.js";
 import type { AuthHmacConfig, MiddlewareFunction } from "../types.js";

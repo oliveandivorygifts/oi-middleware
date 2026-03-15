@@ -3,6 +3,13 @@
  * - src/middleware/auth-hmac.ts — createHmacSignature
  */
 
+/**
+ * Outbound HMAC request signing helpers.
+ * Used by frontends to sign API calls so the auth-hmac middleware accepts them.
+ *
+ * @module
+ */
+
 import { createHmacSignature } from "../middleware/auth-hmac.js";
 
 async function sha256Hex(input: string): Promise<string> {

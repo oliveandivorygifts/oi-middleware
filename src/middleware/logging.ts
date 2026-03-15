@@ -5,6 +5,14 @@
  * - src/helpers/logging.ts  — ConsoleSink, D1EventLogsSink, writeLogWithFailSafe
  */
 
+/**
+ * Request/response logging middleware.
+ * Emits one structured log event per request to D1, console, or a custom sink,
+ * with sampling to control volume in high-traffic environments.
+ *
+ * @module
+ */
+
 import { OBSERVABILITY_ACTIONS } from "../actions.js";
 import { ConsoleSink, D1EventLogsSink, writeLogWithFailSafe } from "../helpers/logging.js";
 import type { D1DatabaseLike, LogEvent, LogSink, MiddlewareFunction } from "../types.js";
