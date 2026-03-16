@@ -26,7 +26,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:prepush": "npm run lint && npm run typecheck && npm run test",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "setup:hooks": "node /Users/yuri_baker/dev/pre-prod/scripts/setup-cross-repo-hooks.mjs"
   },
   "dependencies": {
     "hono": "^4.12.3"
