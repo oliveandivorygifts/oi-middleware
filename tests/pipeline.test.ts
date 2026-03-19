@@ -117,6 +117,132 @@ describe("withErrorHandling", () => {
 });
 
 describe("withAuthHmac", () => {
+  it("rejects requests with missing HMAC headers", async () => {
+    const middleware = withAuthHmac({
+      secret_env_key: "HMAC_SHARED_SECRET",
+      replay_protection: false,
+    });
+    const context = buildContext({ env: { HMAC_SHARED_SECRET: "test-secret" }, state: {} });
+
+    const response = await middleware(
+      new Request("https://example.com/api/test", { method: "POST", body: '{"x":1}' }),
+      context,
+      async () => new Response("ok", { status: 200 }),
+    );
+
+    expect(response.status).toBe(401);
+    const payload = (await response.json()) as { error?: { code?: string; message?: string } };
+    expect(payload.error?.code).toBe("unauthorized");
+    expect(payload.error?.message).toMatch(/Missing required HMAC headers/);
+  });
+
+  it("rejects stale timestamps outside tolerance window", async () => {
+    const secret = "test-secret";
+    const timestamp = String(Math.floor(Date.now() / 1000) - 601);
+    const nonce = "nonce-stale";
+    const body = '{"x":1}';
+    const bodyHash = await sha256Hex(body);
+    const payload = `POST\n/api/test\n${timestamp}\n${nonce}\n${bodyHash}`;
+    const signature = await createHmacSignature(secret, payload);
+    const middleware = withAuthHmac({
+      secret_env_key: "HMAC_SHARED_SECRET",
+      replay_protection: false,
+      tolerance_seconds: 300,
+    });
+
+    const response = await middleware(
+      new Request("https://example.com/api/test", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-oi-timestamp": timestamp,
+          "x-oi-nonce": nonce,
+          "x-oi-signature": signature,
+        },
+        body,
+      }),
+      buildContext({ env: { HMAC_SHARED_SECRET: secret }, state: {} }),
+      async () => new Response("ok", { status: 200 }),
+    );
+
+    expect(response.status).toBe(401);
+    const result = (await response.json()) as { error?: { message?: string } };
+    expect(result.error?.message).toMatch(/Timestamp outside tolerance window/);
+  });
+
+  it("rejects replayed nonces when replay protection is enabled", async () => {
+    const secret = "test-secret";
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const nonce = "nonce-replay";
+    const body = '{"x":1}';
+    const bodyHash = await sha256Hex(body);
+    const payload = `POST\n/api/test\n${timestamp}\n${nonce}\n${bodyHash}`;
+    const signature = await createHmacSignature(secret, payload);
+    const insertCalls: string[] = [];
+    let insertCount = 0;
+    const db = {
+      prepare(sql: string) {
+        const statement = {
+          bind: (..._args: unknown[]) => statement,
+          async run() {
+            if (sql.includes("INSERT INTO api_nonces")) {
+              insertCalls.push(sql);
+              insertCount += 1;
+              if (insertCount > 1) {
+                throw new Error("UNIQUE constraint failed: api_nonces.nonce");
+              }
+            }
+            return { success: true };
+          },
+          async first<T = unknown>() {
+            return null as T | null;
+          },
+          async all<T = unknown>() {
+            return [] as T[];
+          },
+        };
+        return {
+          bind: (..._args: unknown[]) => statement,
+          run: statement.run,
+          first: statement.first,
+          all: statement.all,
+        };
+      },
+    };
+    const middleware = withAuthHmac({
+      secret_env_key: "HMAC_SHARED_SECRET",
+      replay_protection: true,
+    });
+    const makeRequest = () =>
+      new Request("https://example.com/api/test", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-oi-timestamp": timestamp,
+          "x-oi-nonce": nonce,
+          "x-oi-signature": signature,
+        },
+        body,
+      });
+
+    const firstResponse = await middleware(
+      makeRequest(),
+      buildContext({ env: { HMAC_SHARED_SECRET: secret, DB: db }, state: {} }),
+      async () => new Response("ok", { status: 200 }),
+    );
+    expect(firstResponse.status).toBe(200);
+
+    const replayResponse = await middleware(
+      makeRequest(),
+      buildContext({ env: { HMAC_SHARED_SECRET: secret, DB: db }, state: {} }),
+      async () => new Response("ok", { status: 200 }),
+    );
+    expect(replayResponse.status).toBe(401);
+    const replayPayload = (await replayResponse.json()) as { error?: { message?: string } };
+    expect(replayPayload.error?.message).toMatch(/Request replay detected/);
+    expect(insertCalls.length).toBeGreaterThanOrEqual(2);
+  });
+
   it("accepts canonical and legacy query signing payloads", async () => {
     const secret = "test-secret";
     const timestamp = String(Math.floor(Date.now() / 1000));
