@@ -258,6 +258,7 @@ export interface CollectionVariant {
   hero_image_key?: string | null;
   badges_json?: string | null;
   sort_order?: number | null;
+  description_short?: string | null;
   status?: "active" | "archived" | "draft" | null;
   created_at?: string;
   updated_at?: string;
