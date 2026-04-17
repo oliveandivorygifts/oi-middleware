@@ -143,6 +143,7 @@ export interface Collection {
   status: "draft" | "active" | "archived";
   created_at?: string;
   updated_at?: string;
+  shipping_zone_keys?: string[];
 }
 
 /** Join-table row linking a collection to one of its component items. */
@@ -203,6 +204,7 @@ export interface Gift {
   collection_ids?: string[];
   items?: (Item & { item_id: string; quantity: number; sort_order: number })[];
   media?: GiftMedia[];
+  shipping_zone_keys?: string[];
 }
 
 /** Audit record for an AI content-generation run against a gift. */
@@ -262,6 +264,7 @@ export interface CollectionVariant {
   status?: "active" | "archived" | "draft" | null;
   created_at?: string;
   updated_at?: string;
+  shipping_zone_keys?: string[];
 }
 
 /** Join-table row linking a collection variant to its component items. */

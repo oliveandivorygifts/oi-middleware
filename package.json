@@ -1,6 +1,6 @@
 {
   "name": "@oliveandivorygifts/middleware",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Edge-safe middleware pipeline for Cloudflare Workers, Pages, Hono, and Next.js",
   "type": "module",
   "main": "./dist/index.js",
